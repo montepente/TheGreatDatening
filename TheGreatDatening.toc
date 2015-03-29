@@ -1,0 +1,10 @@
+## Interface: 60000
+## Title: The Great Datening
+## Author: Montepente
+## Notes: Adds the date of the guild invite in the officers notes when the player joins the guild, if possible
+## Dependencies: 
+## OptDeps: 
+## SavedVariables: TGDOptions
+## Version: 1.1.0
+
+TheGreatDatening.lua
