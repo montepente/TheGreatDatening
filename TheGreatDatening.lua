@@ -1,3 +1,7 @@
+TheGreatDatening = {};
+TheGreatDatening.fields = {};
+
+
 local EventFrame = CreateFrame("Frame")
 EventFrame:RegisterEvent("ADDON_LOADED")
 EventFrame:RegisterEvent("CHAT_MSG_SYSTEM")
@@ -10,18 +14,32 @@ EventFrame:SetScript("OnEvent", function(self,event,msg)
 		if TGDOptions == nil then
 			TGDOptions = {};
 			TGDOptions.dateFormat = "%B %d, %Y";
+			TGDOptions.textBefore = "";
+			TGDOptions.textAfter = "";
 		end
 
 		-- Interface menu
-		TheGreatDatening = {};
-		TheGreatDatening.panel = CreateFrame( "Frame", "TheGreatDateningPanel", UIParent);
+		TheGreatDatening.panel = CreateFrame( "Frame", "TheGreatDateningPanel", InterfaceOptionsFramePanelContainer);
 		TheGreatDatening.panel.name = "The Great Datening";
+		TheGreatDatening.panel.okay = function (self)
+			TheGreatDatening_close(self)
+		end
+		
+		
 
+		local title = TheGreatDatening.panel:CreateFontString("TGDTitle", "ARTWORK", "GameFontNormalLarge")
+		title:SetPoint("TOPLEFT", 16, -16)
+		title:SetText("The Great Datening")
+
+		local titleDateFormat = TheGreatDatening.panel:CreateFontString("TGDDateFormatLabel", "ARTWORK", "GameFontNormalSmall")
+		titleDateFormat:SetPoint("TOPLEFT", 20, -66)
+		titleDateFormat:SetText("Date Format")
+		
 		-- Dropdown => Date Format
 		local info = {}
-		local fontSizeDropdownTwo = CreateFrame("Frame", "TGDDateFormat", TheGreatDatening.panel, "UIDropDownMenuTemplate")
-		fontSizeDropdownTwo:SetPoint("TOPLEFT", 16, -16)
-		fontSizeDropdownTwo.initialize = function()
+		TheGreatDatening.dateFormat = CreateFrame("Frame", "TGDDateFormat", TheGreatDatening.panel, "UIDropDownMenuTemplate")
+		TheGreatDatening.dateFormat:SetPoint("TOPLEFT", 0, -78)
+		TheGreatDatening.dateFormat.initialize = function()
 			wipe(info)
 			local formats = {"%B %d, %Y", "%m-%d-%Y", "%d-%m-%Y", "%Y-%m-%d", "%m/%d/%Y", "%d/%m/%Y", "%Y/%m/%d"}
 			local names = {"December 31, 2015", "12-31-2015", "31-12-2015", "2015-12-31", "12/31/2015", "31/12/2015", "2015/12/31"}
@@ -44,6 +62,36 @@ EventFrame:SetScript("OnEvent", function(self,event,msg)
 		end
 		TGDDateFormatText:SetText("Date Format")
 
+		local titleTextBefore = TheGreatDatening.panel:CreateFontString("TGDTextBeforeLabel", "ARTWORK", "GameFontNormalSmall")
+		titleTextBefore:SetPoint("TOPLEFT", 20, -119)
+		titleTextBefore:SetText("Text Before")
+		
+		-- Text Before
+		TheGreatDatening.textBefore = CreateFrame("EditBox", "TGDTextBefore", TheGreatDatening.panel, "InputBoxTemplate")
+		TheGreatDatening.textBefore:SetPoint("TOPLEFT", 24, -117)
+		TheGreatDatening.textBefore:SetWidth(100)
+		TheGreatDatening.textBefore:SetHeight(50)
+		TheGreatDatening.textBefore:SetAutoFocus(false)
+		if (TGDOptions.textBefore) then
+			TheGreatDatening.textBefore:SetText(TGDOptions.textBefore)
+			TheGreatDatening.textBefore:SetCursorPosition(0)
+		end
+
+		local titleTextAfter = TheGreatDatening.panel:CreateFontString("TGDTextAfterLabel", "ARTWORK", "GameFontNormalSmall")
+		titleTextAfter:SetPoint("TOPLEFT", 20, -167)
+		titleTextAfter:SetText("Text After")
+
+		-- Text After
+		TheGreatDatening.textAfter = CreateFrame("EditBox", "TGDTextAfter", TheGreatDatening.panel, "InputBoxTemplate")
+		TheGreatDatening.textAfter:SetPoint("TOPLEFT", 24, -165)
+		TheGreatDatening.textAfter:SetWidth(100)
+		TheGreatDatening.textAfter:SetHeight(50)
+		TheGreatDatening.textAfter:SetAutoFocus(false)
+		if (TGDOptions.textAfter) then
+			TheGreatDatening.textAfter:SetText(TGDOptions.textAfter)
+			TheGreatDatening.textAfter:SetCursorPosition(0)
+		end
+
 		InterfaceOptions_AddCategory(TheGreatDatening.panel);
 		
 	elseif (event == "CHAT_MSG_SYSTEM") then
@@ -60,8 +108,6 @@ EventFrame:SetScript("OnEvent", function(self,event,msg)
 			end
 		end
 	end
-
-	
 end)
 
 local waitTable = {};
@@ -104,7 +150,7 @@ function TheGreatDatening_AddDate(datePlayerName)
 		fullName, rank, rankIndex, level, class, zone, note, officernote, online, status, classFileName, achievementPoints, achievementRank, isMobile, canSoR, reputation = GetGuildRosterInfo(ctrRoster);
 		
 		if datePlayerName == fullName then
-			GuildRosterSetOfficerNote(ctrRoster, date(TGDOptions.dateFormat));
+			GuildRosterSetOfficerNote(ctrRoster, TGDOptions.textBefore .. date(TGDOptions.dateFormat) .. TGDOptions.textAfter);
 			
 			endingLoop = 1;
 		end
@@ -117,7 +163,10 @@ function TheGreatDatening_AddDate(datePlayerName)
 	end
 end
 
-
+function TheGreatDatening_close(panel)
+	TGDOptions.textBefore = TheGreatDatening.textBefore:GetText()
+	TGDOptions.textAfter = TheGreatDatening.textAfter:GetText()
+end
 
 function string:splitMsg(inSplitPattern, outResults )
 
